@@ -46,6 +46,10 @@ npm run preview    # serve the production build
 
 The build uses relative paths, so `dist/` can be hosted from any static host or sub-folder (GitHub Pages, Netlify, an S3 bucket…). HTTPS is required for installation and offline mode (localhost is fine for testing).
 
+### Deploying to GitHub Pages
+
+`.github/workflows/deploy-pages.yml` runs the tests, builds, and publishes `dist/` to the `gh-pages` branch on every push to the default branch (or manually from the Actions tab). One-time setup: **Settings → Pages → Build and deployment → Source: Deploy from a branch → `gh-pages` / `(root)`**. The app is then served at `https://<user>.github.io/<repo>/`.
+
 ### Installing on a phone
 
 1. Open the hosted app once while online.
