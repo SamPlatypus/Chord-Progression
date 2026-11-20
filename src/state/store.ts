@@ -51,6 +51,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showScale: true,
   colorByFunction: true,
   keepAwake: true,
+  visual: 'keys',
   volumes: { master: 0.85, chords: 0.8, bass: 0.7, drums: 0.55, click: 0.6 },
   reverb: 0.25,
   trainer: { enabled: false, step: 5, every: 2, target: 140 },
@@ -345,6 +346,12 @@ class Store {
           }
         : {}),
     }));
+    this.set({ selected: null });
+  }
+
+  /** Replace the progression with generated chords (undoable). */
+  loadGenerated(chords: ChordStep[], mode: ModeId) {
+    this.updateSong((song) => ({ ...song, chords, mode, loopRange: null }));
     this.set({ selected: null });
   }
 

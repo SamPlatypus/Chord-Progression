@@ -137,6 +137,9 @@ export function HelpSheet() {
           </li>
           <li>Tap a chord to hear it; tap it again to edit root, quality, bass note, length, or try a substitution.</li>
           <li>Long-press (or drag with a mouse) a chord to reorder it.</li>
+          <li>
+            Stuck? <b>Inspire</b> generates a fresh progression in a chosen style — keep generating while it plays.
+          </li>
         </ul>
         <h4>Play & practice</h4>
         <ul>
@@ -144,6 +147,9 @@ export function HelpSheet() {
           <li>Set a <b>loop section</b> from the chord editor to drill a tricky change.</li>
           <li>Tempo sheet: tap tempo, swing, count-in, metronome and a <b>tempo trainer</b> that speeds up as you loop.</li>
           <li>Changing the key transposes everything; changing the mode re-harmonises (try Major → Dorian).</li>
+          <li>Open the <b>Melody pad</b> and improvise over the loop — lit pads are notes of the current chord.</li>
+          <li>Switch the now-playing view to <b>Guitar</b> to see each chord shape and the next one coming up.</li>
+          <li>Export MIDI or WAV from <b>⋯ → Type, share or export</b> to continue in your DAW.</li>
         </ul>
         <h4>Colours</h4>
         <p>

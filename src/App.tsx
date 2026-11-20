@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { addChordFromPalette, ChordPalette } from './components/Palette';
 import { Header, ControlChips } from './components/Header';
 import { Icon } from './components/Icon';
+import { MelodyPad } from './components/MelodyPad';
 import { NowPlaying } from './components/NowPlaying';
 import { ProgressionGrid } from './components/ProgressionGrid';
 import { TransportBar } from './components/TransportBar';
@@ -12,6 +13,7 @@ import { HelpSheet, SettingsSheet } from './components/sheets/SettingsSheet';
 import { SoundSheet } from './components/sheets/SoundSheet';
 import { TempoSheet } from './components/sheets/TempoSheet';
 import { TextSheet } from './components/sheets/TextSheet';
+import { InspireSheet } from './components/sheets/InspireSheet';
 import { auditionIndex, stop, togglePlay } from './audio/playback';
 import { consumeShareHash } from './state/share';
 import { store, useStore } from './state/store';
@@ -147,7 +149,8 @@ function MoreMenu() {
       </button>
       {open && (
         <div className="card" style={{ position: 'absolute', right: 0, top: 42, zIndex: 30, width: 240, padding: 6, boxShadow: 'var(--shadow)' }} onPointerDown={(e) => e.stopPropagation()}>
-          {item('Fit all chords to the scale', 'wand', () => {
+          {item('Type, share or export…', 'text', () => store.openSheet('text'))}
+          {item('Fit all chords to the scale', 'check', () => {
             store.fitToMode();
             store.toast('Chords fitted to the scale', { label: 'Undo', run: store.undo });
           }, !n)}
@@ -214,6 +217,7 @@ const SHEETS = {
   settings: SettingsSheet,
   rename: RenameSheet,
   help: HelpSheet,
+  inspire: InspireSheet,
 } as const;
 
 export function App() {
@@ -238,18 +242,21 @@ export function App() {
         <Header />
         <ControlChips />
         <main className="main" style={{ marginTop: 10 }}>
-          <div className="area-now">
+          <div className="area-now col">
             <NowPlaying />
+            <MelodyPad />
           </div>
           <section className="card area-prog" aria-label="Progression">
-            <div className="section-head">
+            <div className="section-head prog-head">
               <h2>Progression</h2>
-              <button className="mini-btn" onClick={() => store.openSheet('presets')}>
-                <Icon name="sparkles" /> Presets
-              </button>
-              <button className="mini-btn" onClick={() => store.openSheet('text')} aria-label="Type or share">
-                <Icon name="text" />
-              </button>
+              <div className="prog-actions">
+                <button className="mini-btn" onClick={() => store.openSheet('presets')}>
+                  <Icon name="sparkles" /> Presets
+                </button>
+                <button className="mini-btn" onClick={() => store.openSheet('inspire')}>
+                  <Icon name="wand" /> Inspire
+                </button>
+              </div>
               <MoreMenu />
             </div>
             <ProgressionGrid />

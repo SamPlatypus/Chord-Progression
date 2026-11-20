@@ -15,7 +15,9 @@ import {
   rootSpelling,
 } from '../../theory/chords';
 import { mod12, noteName } from '../../theory/notes';
-import { getMode } from '../../theory/scales';
+import { getMode, keyPrefersFlat, tonicPc } from '../../theory/scales';
+import { guitarShapes } from '../../theory/guitar';
+import { ChordDiagram } from '../ChordDiagram';
 import { substitutions } from '../../theory/suggest';
 import { fnClass, Sheet, songKey } from '../common';
 import { Icon } from '../Icon';
@@ -176,16 +178,30 @@ export function ChordSheet() {
 
       <div className="field">
         <div className="field-label">
+          Guitar shapes <span className="val">easiest first</span>
+        </div>
+        <div className="shape-grid">
+          {guitarShapes(mod12(tonicPc(key) + chord.root), chord.quality, chord.bass).map((shape, i) => (
+            <figure key={i} className={fnClass(a.fn, colorByFunction)}>
+              <ChordDiagram shape={shape} rootPc={mod12(tonicPc(key) + chord.root)} label={a.name} preferFlat={keyPrefersFlat(key)} />
+              <figcaption>{shape.baseFret > 1 ? `fret ${shape.baseFret}` : 'open'}{shape.barre ? ' · barre' : ''}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <div className="field-label">
           Length <span className="val">{chord.beats} beat{chord.beats > 1 ? 's' : ''}</span>
         </div>
         <div className="stepper">
           <button className="icon-btn" onClick={() => apply({ beats: Math.max(1, chord.beats - 1) })} aria-label="Shorter" disabled={chord.beats <= 1}>
             <Icon name="minus" />
           </button>
-          <div className="opt-grid" style={{ flex: 1, gridTemplateColumns: 'repeat(5, 1fr)' }}>
+          <div className="opt-grid length-grid" style={{ flex: 1, gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
             {[1, 2, song.meter, song.meter * 2, song.meter * 4].map((b, i) => (
               <button key={i} className={`opt ${chord.beats === b ? 'on' : ''}`} onClick={() => store.replaceChord(idx, { beats: b })}>
-                {b === song.meter ? '1 bar' : b === song.meter * 2 ? '2 bars' : b === song.meter * 4 ? '4 bars' : `${b} beat${b > 1 ? 's' : ''}`}
+                {b === song.meter ? '1 bar' : b === song.meter * 2 ? '2 bars' : b === song.meter * 4 ? '4 bars' : `${b} bt`}
               </button>
             ))}
           </div>

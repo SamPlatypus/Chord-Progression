@@ -2,8 +2,11 @@ import { useMemo } from 'react';
 import { loopBounds, songVoicings } from '../audio/transport';
 import { store, useStore } from '../state/store';
 import { chordToneNames, getQuality } from '../theory/chords';
+import { guitarShapes } from '../theory/guitar';
+import { keyPrefersFlat } from '../theory/scales';
+import { ChordDiagram } from './ChordDiagram';
 import { scalePcs } from '../theory/suggest';
-import { fnClass, songKey, useAnalysis } from './common';
+import { fnClass, Segmented, songKey, useAnalysis } from './common';
 import { Keyboard } from './Keyboard';
 
 function intervalLabel(semi: number, step: number): string {
@@ -48,6 +51,7 @@ export function NowPlaying() {
     nextIdx = idx >= re ? (settings.loop ? rs : null) : idx + 1;
   }
   const next = nextIdx !== null ? analysis[nextIdx] : null;
+  const nextV = nextIdx !== null ? voicings[nextIdx] : null;
 
   const key = songKey(song);
   const tones = chord ? chordToneNames(chord, key) : [];
@@ -103,9 +107,37 @@ export function NowPlaying() {
           <div key={i} className={`beat ${i === 0 ? 'down' : ''} ${transport.playing && playingIdx === idx && i <= transport.beat ? 'on' : ''}`} />
         ))}
       </div>
-      <Keyboard upper={v?.upper ?? []} bass={v?.bass ?? null} rootPc={v?.rootPc ?? null} scalePcs={settings.showScale ? scalePcs(key) : null} />
+      {settings.visual === 'guitar' && chord && v ? (
+        <div className="fret-view">
+          <figure>
+            <ChordDiagram className="cur" shape={guitarShapes(v.rootPc, chord.quality, chord.bass)[0]} rootPc={v.rootPc} label={a?.name} preferFlat={keyPrefersFlat(key)} />
+          </figure>
+          {nextIdx !== null && next && nextV && (
+            <figure className="nxt">
+              <ChordDiagram
+                shape={guitarShapes(nextV.rootPc, song.chords[nextIdx].quality, song.chords[nextIdx].bass)[0]}
+                rootPc={nextV.rootPc}
+                label={next.name}
+                showNotes={false}
+              />
+              <figcaption>Next · {next.name}</figcaption>
+            </figure>
+          )}
+        </div>
+      ) : (
+        <Keyboard upper={v?.upper ?? []} bass={v?.bass ?? null} rootPc={v?.rootPc ?? null} scalePcs={settings.showScale ? scalePcs(key) : null} />
+      )}
       {chord && (
         <div className="tones">
+          <Segmented
+            label="Visual"
+            value={settings.visual}
+            onChange={(visual) => store.setSettings({ visual })}
+            options={[
+              { value: 'keys', label: 'Keys' },
+              { value: 'guitar', label: 'Guitar' },
+            ]}
+          />
           <span>
             {tones.map((t, i) => (
               <span key={i}>

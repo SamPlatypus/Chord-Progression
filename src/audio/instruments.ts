@@ -448,3 +448,48 @@ export function playHat(ctx: BaseAudioContext, dest: AudioNode, time: number, ve
   nz.connect(hp).connect(g).connect(dest);
   nz.start(time, Math.random() * 0.5, len + 0.02);
 }
+
+// ---------------------------------------------------------------------------
+// Lead voice for the melody pad (held while the pad is pressed)
+
+export function startLead(ctx: BaseAudioContext, dest: AudioNode, midi: number, vel = 0.8): () => void {
+  const f = midiToFreq(midi);
+  const t = ctx.currentTime + 0.005;
+  const tri = ctx.createOscillator();
+  tri.type = 'triangle';
+  tri.frequency.value = f;
+  const sine = ctx.createOscillator();
+  sine.frequency.value = f * 2;
+  const sineGain = ctx.createGain();
+  sineGain.gain.value = 0.18;
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 5.4;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.setValueAtTime(0, t);
+  lfoGain.gain.linearRampToValueAtTime(9, t + 0.45);
+  lfo.connect(lfoGain);
+  lfoGain.connect(tri.detune);
+  lfoGain.connect(sine.detune);
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2600;
+  const amp = ctx.createGain();
+  const peak = 0.2 * vel;
+  amp.gain.setValueAtTime(0, t);
+  amp.gain.linearRampToValueAtTime(peak, t + 0.014);
+  amp.gain.setTargetAtTime(peak * 0.75, t + 0.014, 0.25);
+  tri.connect(filter);
+  sine.connect(sineGain).connect(filter);
+  filter.connect(amp).connect(dest);
+  for (const o of [tri, sine, lfo]) o.start(t);
+  let stopped = false;
+  return () => {
+    if (stopped) return;
+    stopped = true;
+    const now = ctx.currentTime;
+    amp.gain.cancelScheduledValues(now);
+    amp.gain.setValueAtTime(amp.gain.value, now);
+    amp.gain.setTargetAtTime(0, now, 0.06);
+    for (const o of [tri, sine, lfo]) o.stop(now + 0.5);
+  };
+}

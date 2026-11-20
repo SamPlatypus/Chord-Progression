@@ -3,7 +3,7 @@
  * Playback "sessions" wrap each run of the transport so Stop can silence
  * everything already scheduled with one fade.
  */
-import { guitarBody, type InstrumentId, playNote, warmUp } from './instruments';
+import { guitarBody, type InstrumentId, playNote, startLead, warmUp } from './instruments';
 
 export type BusId = 'chords' | 'bass' | 'drums' | 'click';
 
@@ -93,32 +93,10 @@ export class AudioEngine {
   }
 
   private build(ctx: AudioContext) {
-    const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -12;
-    comp.knee.value = 8;
-    comp.ratio.value = 4;
-    comp.attack.value = 0.004;
-    comp.release.value = 0.2;
-    this.master = ctx.createGain();
-    comp.connect(this.master).connect(ctx.destination);
-
-    const reverb = ctx.createConvolver();
-    reverb.buffer = impulse(ctx, 2.3, 2.6);
-    this.reverbSend = ctx.createGain();
-    const reverbOut = ctx.createGain();
-    reverbOut.gain.value = 0.9;
-    this.reverbSend.connect(reverb).connect(reverbOut).connect(comp);
-
-    const mk = (sendAmount: number) => {
-      const g = ctx.createGain();
-      g.connect(comp);
-      const send = ctx.createGain();
-      send.gain.value = sendAmount;
-      g.connect(send).connect(this.reverbSend);
-      return g;
-    };
-    this.buses = { chords: mk(1), bass: mk(0.25), drums: mk(0.35), click: ctx.createGain() };
-    this.buses.click.connect(comp);
+    const g = createGraph(ctx);
+    this.master = g.master;
+    this.reverbSend = g.reverbSend;
+    this.buses = g.buses;
     this.applyMix();
   }
 
@@ -160,6 +138,12 @@ export class AudioEngine {
     });
   }
 
+  /** Start a held melody note; returns a function that releases it. */
+  leadOn(midi: number, vel = 0.8): () => void {
+    const ctx = this.ensure();
+    return startLead(ctx, this.buses.chords, midi, vel);
+  }
+
   stopPreview() {
     this.previewSession?.end(0.08);
     this.previewSession = null;
@@ -170,6 +154,53 @@ export class AudioEngine {
     if (!ctx) return 0;
     return (ctx.outputLatency || 0) + (ctx.baseLatency || 0);
   }
+}
+
+export interface Graph {
+  master: GainNode;
+  reverbSend: GainNode;
+  buses: Record<BusId, GainNode>;
+}
+
+/** Buses → reverb send → compressor → master → destination. Shared with offline export. */
+export function createGraph(ctx: BaseAudioContext): Graph {
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -12;
+  comp.knee.value = 8;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.004;
+  comp.release.value = 0.2;
+  const master = ctx.createGain();
+  comp.connect(master).connect(ctx.destination);
+
+  const reverb = ctx.createConvolver();
+  reverb.buffer = impulse(ctx, 2.3, 2.6);
+  const reverbSend = ctx.createGain();
+  const reverbOut = ctx.createGain();
+  reverbOut.gain.value = 0.9;
+  reverbSend.connect(reverb).connect(reverbOut).connect(comp);
+
+  const mk = (sendAmount: number) => {
+    const g = ctx.createGain();
+    g.connect(comp);
+    const send = ctx.createGain();
+    send.gain.value = sendAmount;
+    g.connect(send).connect(reverbSend);
+    return g;
+  };
+  const buses = { chords: mk(1), bass: mk(0.25), drums: mk(0.35), click: ctx.createGain() };
+  buses.click.connect(comp);
+  return { master, reverbSend, buses };
+}
+
+/** Set mix levels immediately (for offline rendering). */
+export function applyMixNow(g: Graph, mix: Mix) {
+  g.master.gain.value = mix.master;
+  g.buses.chords.gain.value = mix.chords;
+  g.buses.bass.gain.value = mix.bass;
+  g.buses.drums.gain.value = mix.drums;
+  g.buses.click.gain.value = mix.click;
+  g.reverbSend.gain.value = mix.reverb * 0.8;
 }
 
 function impulse(ctx: BaseAudioContext, seconds: number, decay: number): AudioBuffer {

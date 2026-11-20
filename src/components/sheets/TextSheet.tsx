@@ -18,6 +18,9 @@ async function copy(text: string, what: string) {
 
 export function TextSheet() {
   const song = useStore((s) => s.song);
+  const settings = useStore((s) => s.settings);
+  const [loops, setLoops] = useState<1 | 2 | 4>(2);
+  const [busy, setBusy] = useState<string | null>(null);
   const key = songKey(song);
   const [format, setFormat] = useState<'names' | 'numerals'>('names');
   const initial = useMemo(() => {
@@ -66,8 +69,33 @@ export function TextSheet() {
     await copy(url, 'Share link');
   };
 
+  const exportMidiFile = async () => {
+    setBusy('midi');
+    try {
+      const { exportMidi, exportFileName, saveFile } = await import('../../audio/export');
+      const r = await saveFile(exportMidi(song, settings, loops), exportFileName(song, 'mid'), 'audio/midi');
+      if (r !== 'cancelled') store.toast(r === 'shared' ? 'MIDI shared' : 'MIDI file saved');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const exportWavFile = async () => {
+    setBusy('wav');
+    try {
+      const { encodeWav, exportFileName, renderAudio, saveFile } = await import('../../audio/export');
+      const buffer = await renderAudio(song, settings, loops);
+      const r = await saveFile(encodeWav(buffer), exportFileName(song, 'wav'), 'audio/wav');
+      if (r !== 'cancelled') store.toast(r === 'shared' ? 'Audio shared' : `Audio saved (${Math.round(buffer.duration)} s)`);
+    } catch {
+      store.toast('Audio export failed on this device');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
-    <Sheet title="Type or share">
+    <Sheet title="Type, share & export">
       <div className="field">
         <div className="field-label">
           Progression text
@@ -111,7 +139,7 @@ export function TextSheet() {
         </button>
       </div>
       <div className="field">
-        <div className="field-label">Export</div>
+        <div className="field-label">Share</div>
         <div className="btn-row">
           <button className="btn" onClick={() => copy(exportText(), 'Chord chart')}>
             <Icon name="copy" /> Copy chart
@@ -121,6 +149,30 @@ export function TextSheet() {
           </button>
         </div>
         <p className="hint">Share links contain the whole progression — anyone who opens one gets a copy in their library.</p>
+      </div>
+      <div className="field">
+        <div className="field-label">
+          Export for your DAW
+          <Segmented
+            label="Repeats"
+            value={loops}
+            onChange={setLoops}
+            options={[
+              { value: 1, label: '1×' },
+              { value: 2, label: '2×' },
+              { value: 4, label: '4×' },
+            ]}
+          />
+        </div>
+        <div className="btn-row">
+          <button className="btn" disabled={!song.chords.length || !!busy} onClick={() => exportMidiFile()}>
+            <Icon name="download" /> {busy === 'midi' ? 'Saving…' : 'MIDI file'}
+          </button>
+          <button className="btn" disabled={!song.chords.length || !!busy} onClick={() => exportWavFile()}>
+            <Icon name="download" /> {busy === 'wav' ? 'Rendering…' : 'Audio (WAV)'}
+          </button>
+        </div>
+        <p className="hint">MIDI has separate chords, bass and drum tracks with chord-name markers. WAV is rendered with the current sound settings.</p>
       </div>
     </Sheet>
   );

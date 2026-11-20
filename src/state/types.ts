@@ -58,6 +58,8 @@ export interface Settings {
   showScale: boolean;
   colorByFunction: boolean;
   keepAwake: boolean;
+  /** Now-playing visual: piano keyboard or guitar chord box. */
+  visual: 'keys' | 'guitar';
   volumes: { master: number; chords: number; bass: number; drums: number; click: number };
   reverb: number;
   trainer: TempoTrainer;
@@ -74,7 +76,8 @@ export type SheetId =
   | 'text'
   | 'settings'
   | 'rename'
-  | 'help';
+  | 'help'
+  | 'inspire';
 
 export interface Toast {
   id: number;

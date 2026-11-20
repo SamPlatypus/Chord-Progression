@@ -1831,3 +1831,210 @@ kbd {
 .grid-hint {
   margin-top: 12px;
 }
+
+/* ------------------------------------------------------------------ guitar */
+
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fret-view {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 22px;
+  position: relative;
+  min-height: 120px;
+}
+
+.fret-view figure {
+  margin: 0;
+  width: 128px;
+}
+
+.fret-view figure.nxt {
+  width: 86px;
+  opacity: 0.55;
+}
+
+.fret-view figcaption {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.tones {
+  align-items: center;
+  gap: 10px;
+}
+
+.tones .seg-ctl button {
+  height: 24px;
+  font-size: 12px;
+  padding: 0 9px;
+}
+
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shape-grid figure {
+  margin: 0;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 8px 6px 4px;
+}
+
+.shape-grid figcaption {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------ melody pad */
+
+.pad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  text-align: left;
+  color: var(--text-3);
+}
+
+.pad-toggle h2 {
+  flex: 1;
+}
+
+.pad-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.pad-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.pad-controls .octave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.pad-controls .octave .icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.pad-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.pad {
+  height: 58px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.08s, transform 0.06s, border-color 0.15s;
+}
+
+.pad .pn {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.pad .pd {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.pad.tonic .pd {
+  color: var(--text-2);
+}
+
+.pad.tone {
+  background: color-mix(in srgb, var(--fn, var(--accent)) 16%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--fn, var(--accent)) 45%, transparent);
+}
+
+.pad.root {
+  background: color-mix(in srgb, var(--fn, var(--accent)) 30%, var(--surface-2));
+  border-color: var(--fn, var(--accent));
+}
+
+.pad.down {
+  background: var(--fn, var(--accent));
+  color: #fff;
+  transform: scale(0.96);
+}
+
+.pad.down .pd {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.length-grid .opt {
+  padding: 6px 2px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.stepper .icon-btn {
+  flex: none;
+}
+
+.prog-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 400px) {
+  .prog-head {
+    flex-wrap: wrap;
+  }
+  .prog-actions {
+    order: 3;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .prog-actions .mini-btn {
+    justify-content: center;
+    height: 36px;
+  }
+}
+
+@media (max-width: 340px) {
+  .section-head .seg-ctl button {
+    padding: 0 7px;
+  }
+  .section-head .meta {
+    display: none;
+  }
+}
